@@ -1,12 +1,6 @@
-import connection from '../databases/postgres';
-
-export interface Recharge {
-  id: number;
-  cardId: number;
-  timestamp: Date;
-  amount: number;
-}
-export type RechargeInsertData = Omit<Recharge, 'id' | 'timestamp'>;
+import { connection } from '../databases/postgres';
+import { Recharge } from '../utils/interfaces/rechargeInterface';
+import { RechargeInsertData } from '../utils/types/rechargeTypes';
 
 export async function findByCardId(cardId: number) {
   const result = await connection.query<Recharge, [number]>(

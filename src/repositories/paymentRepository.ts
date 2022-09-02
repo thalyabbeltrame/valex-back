@@ -1,14 +1,5 @@
-import connection from '../databases/postgres';
-
-export interface Payment {
-  id: number;
-  cardId: number;
-  businessId: number;
-  timestamp: Date;
-  amount: number;
-}
-export type PaymentWithBusinessName = Payment & { businessName: string };
-export type PaymentInsertData = Omit<Payment, 'id' | 'timestamp'>;
+import { connection } from '../databases/postgres';
+import { PaymentInsertData, PaymentWithBusinessName } from '../utils/types/paymentTypes';
 
 export async function findByCardId(cardId: number) {
   const result = await connection.query<PaymentWithBusinessName, [number]>(

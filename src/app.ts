@@ -1,11 +1,12 @@
 import express, { json, Express } from 'express';
+import 'express-async-errors';
 import cors from 'cors';
 
-import router from './routers/index';
+import { router } from './routers/index';
+import { erroHandler } from './middlewares/errorMiddleware';
 
-const app: Express = express();
+export const app: Express = express();
 app.use(json());
 app.use(cors());
 app.use(router);
-
-export default app;
+app.use(erroHandler);

@@ -1,24 +1,7 @@
-import connection from '../databases/postgres';
-import { mapObjectToUpdateQuery } from '../utils/sqlUtils.js';
-
-export type TransactionTypes = 'groceries' | 'restaurant' | 'transport' | 'education' | 'health';
-
-export interface Card {
-  id: number;
-  employeeId: number;
-  number: string;
-  cardholderName: string;
-  securityCode: string;
-  expirationDate: string;
-  password?: string;
-  isVirtual: boolean;
-  originalCardId?: number;
-  isBlocked: boolean;
-  type: TransactionTypes;
-}
-
-export type CardInsertData = Omit<Card, 'id'>;
-export type CardUpdateData = Partial<Card>;
+import { connection } from '../databases/postgres';
+import { Card } from '../utils/interfaces/cardInterface';
+import { CardInsertData, CardUpdateData, TransactionTypes } from '../utils/types/cardTypes';
+import { mapObjectToUpdateQuery } from '../utils/sqlUtils';
 
 export async function find() {
   const result = await connection.query<Card>('SELECT * FROM cards');

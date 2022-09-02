@@ -1,12 +1,5 @@
-import connection from '../databases/postgres';
-
-export interface Employee {
-  id: number;
-  fullName: string;
-  cpf: string;
-  email: string;
-  companyId: number;
-}
+import { connection } from '../databases/postgres';
+import { Employee } from '../utils/interfaces/employeeInterface';
 
 export async function findById(id: number) {
   const result = await connection.query<Employee, [number]>('SELECT * FROM employees WHERE id=$1', [
