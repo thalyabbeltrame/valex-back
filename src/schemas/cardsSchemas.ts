@@ -26,3 +26,7 @@ export const blockUnblockCardSchema = Joi.object({
     .length(4)
     .required(),
 });
+
+export const rechargeCardSchema = Joi.object({
+  amount: Joi.number().greater(0).required(),
+});

@@ -33,3 +33,12 @@ export async function unblockCard(req: Request, res: Response) {
   await cardsService.unblockCard(Number(cardId), password);
   res.sendStatus(200);
 }
+
+export async function rechargeCard(req: Request, res: Response) {
+  const { apiKey } = res.locals;
+  const { cardId } = req.params;
+  const { amount } = req.body;
+
+  await cardsService.rechargeCard(apiKey, Number(cardId), Number(amount));
+  res.sendStatus(200);
+}

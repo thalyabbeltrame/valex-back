@@ -3,15 +3,19 @@ import dayjs from 'dayjs';
 import * as cardRepository from '../repositories/cardRepository';
 import * as companyRepository from '../repositories/companyRepository';
 import * as employeeRepository from '../repositories/employeeRepository';
+import * as rechargeRepository from '../repositories/rechargeRepository';
 import { AppError } from '../utils/classes/AppError';
 import { Card } from '../utils/classes/Card';
 import { generateDecryptedData, generateEncryptedData } from '../utils/cryptUtils';
 import { Card as ICard } from '../utils/interfaces/cardInterface';
+import { Company } from '../utils/interfaces/companyInterface';
+import { Employee } from '../utils/interfaces/employeeInterface';
 import { TransactionTypes } from '../utils/types/cardTypes';
 
 export async function createNewCard(apiKey: string, employeeId: number, type: TransactionTypes) {
-  await checkIfCompanyExists(apiKey);
+  const company = await checkIfCompanyExists(apiKey);
   const employee = await checkIfEmployeeExists(employeeId);
+  checkIfEmployeeWorksAtTheCompany(company, employee);
   await checkIfHasCardWithThisType(type, employeeId);
   const cardData = new Card(employeeId, type, employee.fullName);
   await cardRepository.insert(cardData);
@@ -26,7 +30,7 @@ export async function activateCard(
   const card = await checkIfCardExists(cardId);
   checkIfCardBelongsToEmployee(employeeId, card);
   checkIfCardIsExpirated(card);
-  checkIfCardIsActivated(card);
+  checkIfCardIsActive(card);
   checkIfSecurityCodeIsCorrect(securityCode, card);
 
   const encryptedPassword = generateEncryptedData(password);
@@ -51,15 +55,32 @@ export async function unblockCard(cardId: number, password: string) {
   await cardRepository.update(cardId, { isBlocked: false });
 }
 
+export async function rechargeCard(apiKey: string, cardId: number, amount: number) {
+  const company = await checkIfCompanyExists(apiKey);
+  const card = await checkIfCardExists(cardId);
+  const employee = await employeeRepository.findById(card.employeeId);
+  checkIfEmployeeWorksAtTheCompany(company, employee);
+  checkIfCardIsInactive(card);
+  checkIfCardIsExpirated(card);
+
+  await rechargeRepository.insert({ cardId, amount });
+}
+
 async function checkIfCompanyExists(apiKey: string) {
   const company = await companyRepository.findByApiKey(apiKey);
   if (!company) throw new AppError('not_found', 'Company not found');
+  return company;
 }
 
 async function checkIfEmployeeExists(employeeId: number) {
   const employee = await employeeRepository.findById(employeeId);
   if (!employee) throw new AppError('not_found', 'Employee not found');
   return employee;
+}
+
+function checkIfEmployeeWorksAtTheCompany(company: Company, employee: Employee) {
+  if (company.id !== employee.companyId)
+    throw new AppError('unauthorized', 'Employee does not work at the company');
 }
 
 async function checkIfHasCardWithThisType(cardType: TransactionTypes, employeeId: number) {
@@ -84,7 +105,7 @@ function checkIfCardIsExpirated(card: ICard) {
     throw new AppError('forbidden', 'This card is expired');
 }
 
-function checkIfCardIsActivated(card: ICard) {
+function checkIfCardIsActive(card: ICard) {
   if (card.password) throw new AppError('conflict', 'Cannot activate card more than once');
 }
 
@@ -106,4 +127,8 @@ function checkIfPasswordIsCorrect(password: string, card: ICard) {
 
 function checkIfCardIsUnblocked(card: ICard) {
   if (!card.isBlocked) throw new AppError('conflict', 'Card is already unblocked');
+}
+
+function checkIfCardIsInactive(card: ICard) {
+  if (!card.password) throw new AppError('unauthorized', 'Card is inactive');
 }
