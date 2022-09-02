@@ -33,6 +33,15 @@ export async function activateCard(
   await cardRepository.update(cardId, { password: encryptedPassword });
 }
 
+export async function blockCard(cardId: number, password: string) {
+  const card = await checkIfCardExists(cardId);
+  checkIfCardIsExpirated(card);
+  checkIfCardIsBlocked(card);
+  checkIfPasswordIsCorrect(password, card);
+
+  await cardRepository.update(cardId, { isBlocked: true });
+}
+
 async function checkIfCompanyExists(apiKey: string) {
   const company = await companyRepository.findByApiKey(apiKey);
   if (!company) throw new AppError('not_found', 'Company not found');
@@ -62,15 +71,12 @@ function checkIfCardBelongsToEmployee(employeeId: number, card: ICard) {
 
 function checkIfCardIsExpirated(card: ICard) {
   const formattedDate = card.expirationDate.replace('/', '/01/');
-  if (!dayjs().isBefore(dayjs(formattedDate), 'month')) {
+  if (!dayjs().isBefore(dayjs(formattedDate), 'month'))
     throw new AppError('forbidden', 'This card is expired');
-  }
 }
 
 function checkIfCardIsActivated(card: ICard) {
-  if (card.password) {
-    throw new AppError('conflict', 'Cannot activate card more than once');
-  }
+  if (card.password) throw new AppError('conflict', 'Cannot activate card more than once');
 }
 
 function checkIfSecurityCodeIsCorrect(securityCode: string, card: ICard) {
@@ -78,4 +84,13 @@ function checkIfSecurityCodeIsCorrect(securityCode: string, card: ICard) {
   if (securityCode !== decryptedCode) {
     throw new AppError('unauthorized', 'Invalid security code');
   }
+}
+
+function checkIfCardIsBlocked(card: ICard) {
+  if (card.isBlocked) throw new AppError('conflict', 'Card is already blocked');
+}
+
+function checkIfPasswordIsCorrect(password: string, card: ICard) {
+  const decryptedPassword = card.password ? generateDecryptedData(card.password) : '';
+  if (password !== decryptedPassword) throw new AppError('unauthorized', 'Invalid password');
 }

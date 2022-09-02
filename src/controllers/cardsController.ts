@@ -17,3 +17,11 @@ export async function activateCard(req: Request, res: Response) {
   await cardsService.activateCard(Number(cardId), Number(employeeId), password, securityCode);
   res.sendStatus(200);
 }
+
+export async function blockCard(req: Request, res: Response) {
+  const { cardId } = req.params;
+  const { password } = req.body;
+
+  await cardsService.blockCard(Number(cardId), password);
+  res.sendStatus(200);
+}
