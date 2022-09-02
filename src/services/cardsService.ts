@@ -42,6 +42,15 @@ export async function blockCard(cardId: number, password: string) {
   await cardRepository.update(cardId, { isBlocked: true });
 }
 
+export async function unblockCard(cardId: number, password: string) {
+  const card = await checkIfCardExists(cardId);
+  checkIfCardIsExpirated(card);
+  checkIfCardIsUnblocked(card);
+  checkIfPasswordIsCorrect(password, card);
+
+  await cardRepository.update(cardId, { isBlocked: false });
+}
+
 async function checkIfCompanyExists(apiKey: string) {
   const company = await companyRepository.findByApiKey(apiKey);
   if (!company) throw new AppError('not_found', 'Company not found');
@@ -93,4 +102,8 @@ function checkIfCardIsBlocked(card: ICard) {
 function checkIfPasswordIsCorrect(password: string, card: ICard) {
   const decryptedPassword = card.password ? generateDecryptedData(card.password) : '';
   if (password !== decryptedPassword) throw new AppError('unauthorized', 'Invalid password');
+}
+
+function checkIfCardIsUnblocked(card: ICard) {
+  if (!card.isBlocked) throw new AppError('conflict', 'Card is already unblocked');
 }
