@@ -1,5 +1,5 @@
 import { connection } from '../databases/postgres';
-import { Business } from '../utils/interfaces/businessInterface';
+import { Business } from '../interfaces/businessInterface';
 
 export async function findById(id: number) {
   const result = await connection.query<Business, [number]>(

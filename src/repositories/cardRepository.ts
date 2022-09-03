@@ -1,6 +1,6 @@
 import { connection } from '../databases/postgres';
-import { Card } from '../utils/interfaces/cardInterface';
-import { CardInsertData, CardUpdateData, TransactionTypes } from '../utils/types/cardTypes';
+import { Card } from '../interfaces/cardInterface';
+import { CardInsertData, CardUpdateData, TransactionTypes } from '../types/cardTypes';
 import { mapObjectToUpdateQuery } from '../utils/sqlUtils';
 
 export async function find() {

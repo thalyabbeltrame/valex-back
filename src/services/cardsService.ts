@@ -1,26 +1,27 @@
+import { faker } from '@faker-js/faker';
 import dayjs from 'dayjs';
 
+import { Business } from '../interfaces/businessInterface';
+import { Card } from '../interfaces/cardInterface';
+import { Company } from '../interfaces/companyInterface';
+import { Employee } from '../interfaces/employeeInterface';
 import * as businessRepository from '../repositories/businessRepository';
 import * as cardRepository from '../repositories/cardRepository';
 import * as companyRepository from '../repositories/companyRepository';
 import * as employeeRepository from '../repositories/employeeRepository';
 import * as paymentRepository from '../repositories/paymentRepository';
 import * as rechargeRepository from '../repositories/rechargeRepository';
-import { AppError } from '../utils/classes/AppError';
-import { Card } from '../utils/classes/Card';
+import { TransactionTypes } from '../types/cardTypes';
+import { CustomError } from '../utils/CustomError';
+import { generateCardNumber, generateExpirationDate, generateHolderName } from '../utils/cardUtils';
 import { generateDecryptedData, generateEncryptedData } from '../utils/cryptUtils';
-import { Business } from '../utils/interfaces/businessInterface';
-import { Card as ICard } from '../utils/interfaces/cardInterface';
-import { Company } from '../utils/interfaces/companyInterface';
-import { Employee } from '../utils/interfaces/employeeInterface';
-import { TransactionTypes } from '../utils/types/cardTypes';
 
 export async function createNewCard(apiKey: string, employeeId: number, type: TransactionTypes) {
   const company = await checkIfCompanyExists(apiKey);
   const employee = await checkIfEmployeeExists(employeeId);
   checkIfEmployeeWorksAtTheCompany(company, employee);
   await checkIfHasCardWithThisType(type, employeeId);
-  const cardData = new Card(employeeId, type, employee.fullName);
+  const cardData = createCardData(employeeId, employee.fullName, type);
   await cardRepository.insert(cardData);
 }
 
@@ -94,86 +95,101 @@ export async function getCardBalance(cardId: number) {
   return { balance, transactions, recharges };
 }
 
+function createCardData(employeeId: number, employeeFullName: string, type: TransactionTypes) {
+  return {
+    employeeId: employeeId,
+    number: generateCardNumber(),
+    cardholderName: generateHolderName(employeeFullName),
+    securityCode: generateEncryptedData(faker.finance.creditCardCVV()),
+    expirationDate: generateExpirationDate(),
+    password: undefined,
+    isVirtual: false,
+    originalCardId: undefined,
+    isBlocked: false,
+    type: type,
+  };
+}
+
 async function checkIfCompanyExists(apiKey: string) {
   const company = await companyRepository.findByApiKey(apiKey);
-  if (!company) throw new AppError('not_found', 'Company not found');
+  if (!company) throw new CustomError('not_found', 'Company not found');
   return company;
 }
 
 async function checkIfEmployeeExists(employeeId: number) {
   const employee = await employeeRepository.findById(employeeId);
-  if (!employee) throw new AppError('not_found', 'Employee not found');
+  if (!employee) throw new CustomError('not_found', 'Employee not found');
   return employee;
 }
 
 function checkIfEmployeeWorksAtTheCompany(company: Company, employee: Employee) {
   if (company.id !== employee.companyId)
-    throw new AppError('unauthorized', 'Employee does not work at the company');
+    throw new CustomError('unauthorized', 'Employee does not work at the company');
 }
 
 async function checkIfHasCardWithThisType(cardType: TransactionTypes, employeeId: number) {
   const cards = await cardRepository.findByTypeAndEmployeeId(cardType, employeeId);
-  if (cards) throw new AppError('conflict', `The employee already has a ${cardType} card`);
+  if (cards) throw new CustomError('conflict', `The employee already has a ${cardType} card`);
 }
 
 async function checkIfCardExists(cardId: number) {
   const card = await cardRepository.findById(cardId);
-  if (!card) throw new AppError('not_found', 'Card not found');
+  if (!card) throw new CustomError('not_found', 'Card not found');
   return card;
 }
 
-function checkIfCardBelongsToEmployee(employeeId: number, card: ICard) {
+function checkIfCardBelongsToEmployee(employeeId: number, card: Card) {
   if (employeeId !== card.employeeId)
-    throw new AppError('forbidden', 'Card does not belong to this employee');
+    throw new CustomError('forbidden', 'Card does not belong to this employee');
 }
 
-function checkIfCardIsExpirated(card: ICard) {
+function checkIfCardIsExpirated(card: Card) {
   const formattedDate = card.expirationDate.replace('/', '/01/');
   if (!dayjs().isBefore(dayjs(formattedDate), 'month'))
-    throw new AppError('forbidden', 'This card is expired');
+    throw new CustomError('forbidden', 'This card is expired');
 }
 
-function checkIfCardIsActive(card: ICard) {
-  if (card.password) throw new AppError('conflict', 'Cannot activate card more than once');
+function checkIfCardIsActive(card: Card) {
+  if (card.password) throw new CustomError('conflict', 'Cannot activate card more than once');
 }
 
-function checkIfSecurityCodeIsCorrect(securityCode: string, card: ICard) {
+function checkIfSecurityCodeIsCorrect(securityCode: string, card: Card) {
   const decryptedCode = generateDecryptedData(card.securityCode);
   if (securityCode !== decryptedCode) {
-    throw new AppError('unauthorized', 'Invalid security code');
+    throw new CustomError('unauthorized', 'Invalid security code');
   }
 }
 
-function checkIfCardIsBlocked(card: ICard) {
-  if (card.isBlocked) throw new AppError('conflict', 'Card is already blocked');
+function checkIfCardIsBlocked(card: Card) {
+  if (card.isBlocked) throw new CustomError('conflict', 'Card is already blocked');
 }
 
-function checkIfPasswordIsCorrect(password: string, card: ICard) {
+function checkIfPasswordIsCorrect(password: string, card: Card) {
   const decryptedPassword = card.password ? generateDecryptedData(card.password) : '';
-  if (password !== decryptedPassword) throw new AppError('unauthorized', 'Invalid password');
+  if (password !== decryptedPassword) throw new CustomError('unauthorized', 'Invalid password');
 }
 
-function checkIfCardIsUnblocked(card: ICard) {
-  if (!card.isBlocked) throw new AppError('conflict', 'Card is already unblocked');
+function checkIfCardIsUnblocked(card: Card) {
+  if (!card.isBlocked) throw new CustomError('conflict', 'Card is already unblocked');
 }
 
-function checkIfCardIsInactive(card: ICard) {
-  if (!card.password) throw new AppError('unauthorized', 'Card is inactive');
+function checkIfCardIsInactive(card: Card) {
+  if (!card.password) throw new CustomError('unauthorized', 'Card is inactive');
 }
 
 async function checkIfBusinessIsRegistered(businessId: number) {
   const business = await businessRepository.findById(businessId);
-  if (!business) throw new AppError('not_found', 'Business not found');
+  if (!business) throw new CustomError('not_found', 'Business not found');
   return business;
 }
 
-function checkIfCardTypeIsAcceptedAtBusiness(business: Business, card: ICard) {
+function checkIfCardTypeIsAcceptedAtBusiness(business: Business, card: Card) {
   if (business.type !== card.type)
-    throw new AppError('unauthorized', 'The business does not accept this card type');
+    throw new CustomError('unauthorized', 'The business does not accept this card type');
 }
 
 async function checkIfBalanceIsEnough(balance: number, amount: number) {
-  if (amount > balance) throw new AppError('bad_request', 'Insufficient balance');
+  if (amount > balance) throw new CustomError('bad_request', 'Insufficient balance');
 }
 
 async function calculateCardBalance(cardId: number) {

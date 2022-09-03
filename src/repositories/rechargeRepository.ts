@@ -1,6 +1,6 @@
 import { connection } from '../databases/postgres';
-import { Recharge } from '../utils/interfaces/rechargeInterface';
-import { RechargeInsertData } from '../utils/types/rechargeTypes';
+import { Recharge } from '../interfaces/rechargeInterface';
+import { RechargeInsertData } from '../types/rechargeTypes';
 
 export async function findByCardId(cardId: number) {
   const result = await connection.query<Recharge, [number]>(

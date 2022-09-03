@@ -1,5 +1,5 @@
 import { connection } from '../databases/postgres';
-import { Company } from '../utils/interfaces/companyInterface';
+import { Company } from '../interfaces/companyInterface';
 
 export async function findByApiKey(apiKey: string) {
   const result = await connection.query<Company, [string]>(

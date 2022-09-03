@@ -1,4 +1,4 @@
-export class AppError {
+export class CustomError {
   status: string;
   message: string;
 

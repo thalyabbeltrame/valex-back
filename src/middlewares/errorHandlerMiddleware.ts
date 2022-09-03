@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import { AppError } from '../utils/classes/AppError';
+import { CustomError } from '../utils/CustomError';
 
 interface StatusCodeObject {
   [typeofError: string]: number;
@@ -20,7 +20,7 @@ export function erroHandler(error: Error, _req: Request, res: Response, _next: N
     unprocessable_entity: 422,
   };
 
-  if (error instanceof AppError) {
+  if (error instanceof CustomError) {
     return res.status(httpStatusCode[error.status]).send({ message: error.message });
   }
 

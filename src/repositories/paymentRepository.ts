@@ -1,5 +1,5 @@
 import { connection } from '../databases/postgres';
-import { PaymentInsertData, PaymentWithBusinessName } from '../utils/types/paymentTypes';
+import { PaymentInsertData, PaymentWithBusinessName } from '../types/paymentTypes';
 
 export async function findByCardId(cardId: number) {
   const result = await connection.query<PaymentWithBusinessName, [number]>(
