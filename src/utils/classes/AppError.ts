@@ -2,7 +2,7 @@ export class AppError {
   status: string;
   message: string;
 
-  constructor(status = 'internal_server_error', message = 'Something went wrong') {
+  constructor(status: string, message: string) {
     this.status = status;
     this.message = message;
   }
