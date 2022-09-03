@@ -7,6 +7,7 @@ import {
   unblockCard,
   rechargeCard,
   payWithCard,
+  getCardBalance,
 } from '../controllers/cardsController';
 import { validateApiKey } from '../middlewares/apiKeyMiddleware';
 import { validateBody } from '../middlewares/bodyMiddeware';
@@ -31,3 +32,4 @@ cardsRouter.post(
   rechargeCard
 );
 cardsRouter.post('/cards/:cardId/payment', validateBody(paymentSchema), payWithCard);
+cardsRouter.get('/cards/:cardId/balance', getCardBalance);

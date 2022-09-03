@@ -13,9 +13,7 @@ import { Business } from '../utils/interfaces/businessInterface';
 import { Card as ICard } from '../utils/interfaces/cardInterface';
 import { Company } from '../utils/interfaces/companyInterface';
 import { Employee } from '../utils/interfaces/employeeInterface';
-import { Recharge } from '../utils/interfaces/rechargeInterface';
 import { TransactionTypes } from '../utils/types/cardTypes';
-import { PaymentWithBusinessName } from '../utils/types/paymentTypes';
 
 export async function createNewCard(apiKey: string, employeeId: number, type: TransactionTypes) {
   const company = await checkIfCompanyExists(apiKey);
@@ -85,7 +83,15 @@ export async function payWithCard(
 
   const business = await checkIfBusinessIsRegistered(businessId);
   checkIfCardTypeIsAcceptedAtBusiness(business, card);
-  await checkIfBalanceIsEnough(cardId, amount);
+
+  const { balance } = await calculateCardBalance(cardId);
+  await checkIfBalanceIsEnough(balance, amount);
+}
+
+export async function getCardBalance(cardId: number) {
+  await checkIfCardExists(cardId);
+  const { balance, transactions, recharges } = await calculateCardBalance(cardId);
+  return { balance, transactions, recharges };
 }
 
 async function checkIfCompanyExists(apiKey: string) {
@@ -166,16 +172,15 @@ function checkIfCardTypeIsAcceptedAtBusiness(business: Business, card: ICard) {
     throw new AppError('unauthorized', 'The business does not accept this card type');
 }
 
-async function checkIfBalanceIsEnough(cardId: number, amount: number) {
-  const payments = await paymentRepository.findByCardId(cardId);
-  const recharges = await rechargeRepository.findByCardId(cardId);
-  const balance = calculateBalance(payments, recharges);
+async function checkIfBalanceIsEnough(balance: number, amount: number) {
   if (amount > balance) throw new AppError('bad_request', 'Insufficient balance');
 }
 
-function calculateBalance(payments: PaymentWithBusinessName[], recharges: Recharge[]) {
-  return (
+async function calculateCardBalance(cardId: number) {
+  const transactions = await paymentRepository.findByCardId(cardId);
+  const recharges = await rechargeRepository.findByCardId(cardId);
+  const balance =
     recharges.reduce((prev, curr) => prev + curr.amount, 0) -
-    payments.reduce((prev, curr) => prev + curr.amount, 0)
-  );
+    transactions.reduce((prev, curr) => prev + curr.amount, 0);
+  return { balance, transactions, recharges };
 }
