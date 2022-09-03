@@ -6,6 +6,7 @@ import {
   createNewCard,
   unblockCard,
   rechargeCard,
+  payWithCard,
 } from '../controllers/cardsController';
 import { validateApiKey } from '../middlewares/apiKeyMiddleware';
 import { validateBody } from '../middlewares/bodyMiddeware';
@@ -13,6 +14,7 @@ import {
   activateCardSchema,
   blockUnblockCardSchema,
   newCardSchema,
+  paymentSchema,
   rechargeCardSchema,
 } from '../schemas/cardsSchemas';
 
@@ -28,3 +30,4 @@ cardsRouter.post(
   validateBody(rechargeCardSchema),
   rechargeCard
 );
+cardsRouter.post('/cards/:cardId/payment', validateBody(paymentSchema), payWithCard);

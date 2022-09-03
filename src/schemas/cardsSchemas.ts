@@ -28,5 +28,14 @@ export const blockUnblockCardSchema = Joi.object({
 });
 
 export const rechargeCardSchema = Joi.object({
-  amount: Joi.number().greater(0).required(),
+  amount: Joi.number().integer().greater(0).required(),
+});
+
+export const paymentSchema = Joi.object({
+  password: Joi.string()
+    .regex(/^[0-9]*$/)
+    .length(4)
+    .required(),
+  businessId: Joi.number().integer().required(),
+  amount: Joi.number().integer().greater(0).required(),
 });

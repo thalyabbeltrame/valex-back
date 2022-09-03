@@ -1,16 +1,21 @@
 import dayjs from 'dayjs';
 
+import * as businessRepository from '../repositories/businessRepository';
 import * as cardRepository from '../repositories/cardRepository';
 import * as companyRepository from '../repositories/companyRepository';
 import * as employeeRepository from '../repositories/employeeRepository';
+import * as paymentRepository from '../repositories/paymentRepository';
 import * as rechargeRepository from '../repositories/rechargeRepository';
 import { AppError } from '../utils/classes/AppError';
 import { Card } from '../utils/classes/Card';
 import { generateDecryptedData, generateEncryptedData } from '../utils/cryptUtils';
+import { Business } from '../utils/interfaces/businessInterface';
 import { Card as ICard } from '../utils/interfaces/cardInterface';
 import { Company } from '../utils/interfaces/companyInterface';
 import { Employee } from '../utils/interfaces/employeeInterface';
+import { Recharge } from '../utils/interfaces/rechargeInterface';
 import { TransactionTypes } from '../utils/types/cardTypes';
+import { PaymentWithBusinessName } from '../utils/types/paymentTypes';
 
 export async function createNewCard(apiKey: string, employeeId: number, type: TransactionTypes) {
   const company = await checkIfCompanyExists(apiKey);
@@ -64,6 +69,23 @@ export async function rechargeCard(apiKey: string, cardId: number, amount: numbe
   checkIfCardIsExpirated(card);
 
   await rechargeRepository.insert({ cardId, amount });
+}
+
+export async function payWithCard(
+  cardId: number,
+  password: string,
+  businessId: number,
+  amount: number
+) {
+  const card = await checkIfCardExists(cardId);
+  checkIfCardIsInactive(card);
+  checkIfCardIsExpirated(card);
+  checkIfCardIsBlocked(card);
+  checkIfPasswordIsCorrect(password, card);
+
+  const business = await checkIfBusinessIsRegistered(businessId);
+  checkIfCardTypeIsAcceptedAtBusiness(business, card);
+  await checkIfBalanceIsEnough(cardId, amount);
 }
 
 async function checkIfCompanyExists(apiKey: string) {
@@ -131,4 +153,29 @@ function checkIfCardIsUnblocked(card: ICard) {
 
 function checkIfCardIsInactive(card: ICard) {
   if (!card.password) throw new AppError('unauthorized', 'Card is inactive');
+}
+
+async function checkIfBusinessIsRegistered(businessId: number) {
+  const business = await businessRepository.findById(businessId);
+  if (!business) throw new AppError('not_found', 'Business not found');
+  return business;
+}
+
+function checkIfCardTypeIsAcceptedAtBusiness(business: Business, card: ICard) {
+  if (business.type !== card.type)
+    throw new AppError('unauthorized', 'The business does not accept this card type');
+}
+
+async function checkIfBalanceIsEnough(cardId: number, amount: number) {
+  const payments = await paymentRepository.findByCardId(cardId);
+  const recharges = await rechargeRepository.findByCardId(cardId);
+  const balance = calculateBalance(payments, recharges);
+  if (amount > balance) throw new AppError('bad_request', 'Insufficient balance');
+}
+
+function calculateBalance(payments: PaymentWithBusinessName[], recharges: Recharge[]) {
+  return (
+    recharges.reduce((prev, curr) => prev + curr.amount, 0) -
+    payments.reduce((prev, curr) => prev + curr.amount, 0)
+  );
 }
