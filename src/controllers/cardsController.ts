@@ -51,8 +51,8 @@ export async function payWithCard(req: Request, res: Response) {
 }
 
 export async function getCardBalance(req: Request, res: Response) {
-  const { cardId } = req.params;
+  const { cardId } = res.locals;
 
-  const { balance, transactions, recharges } = await cardsService.getCardBalance(Number(cardId));
+  const { balance, transactions, recharges } = await cardsService.getCardBalance(cardId);
   res.status(200).json({ balance, transactions, recharges });
 }

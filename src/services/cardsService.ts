@@ -112,6 +112,7 @@ export async function payWithCard(
 export async function getCardBalance(cardId: number) {
   const card = await cardRepository.findById(cardId);
   checkIfCardExists(card);
+
   const { balance, transactions, recharges } = await calculateCardBalance(cardId);
   return { balance, transactions, recharges };
 }

@@ -54,4 +54,4 @@ cardsRouter.post(
   validateBody(paymentSchema),
   payWithCard
 );
-cardsRouter.get('/cards/:cardId/balance', getCardBalance);
+cardsRouter.get('/cards/:cardId/balance', validateParams, getCardBalance);
