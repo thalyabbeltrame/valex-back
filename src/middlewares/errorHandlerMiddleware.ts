@@ -10,7 +10,7 @@ type Error = {
   message: string;
 };
 
-export function erroHandler(error: Error, _req: Request, res: Response, _next: NextFunction) {
+export function errorHandler(error: Error, _req: Request, res: Response, _next: NextFunction) {
   const httpStatusCode: StatusCodeObject = {
     bad_request: 400,
     unauthorized: 401,

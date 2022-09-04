@@ -21,10 +21,15 @@ import {
 import { generateDecryptedData, generateEncryptedData } from '../utils/cryptUtils';
 
 export async function createNewCard(apiKey: string, employeeId: number, type: TransactionTypes) {
-  const company = await checkIfCompanyExists(apiKey);
-  const employee = await checkIfEmployeeExists(employeeId);
-  checkIfEmployeeWorksAtTheCompany(company, employee);
-  await checkIfHasCardWithThisType(type, employeeId);
+  const company = await companyRepository.findByApiKey(apiKey);
+  checkIfCompanyExists(company);
+
+  const employee = await employeeRepository.findById(employeeId);
+  checkIfEmployeeExists(employee);
+
+  checkIfEmployeeWorksForThisCompany(company, employee);
+  await checkIfAlreadyHasCardWithThisType(type, employeeId);
+
   const cardData = createCardData(employeeId, employee.fullName, type);
   await cardRepository.insert(cardData);
 }
@@ -64,10 +69,12 @@ export async function unblockCard(cardId: number, password: string) {
 }
 
 export async function rechargeCard(apiKey: string, cardId: number, amount: number) {
-  const company = await checkIfCompanyExists(apiKey);
+  const company = await companyRepository.findByApiKey(apiKey);
+  checkIfCompanyExists(company);
+
   const card = await checkIfCardExists(cardId);
   const employee = await employeeRepository.findById(card.employeeId);
-  checkIfEmployeeWorksAtTheCompany(company, employee);
+  checkIfEmployeeWorksForThisCompany(company, employee);
   checkIfCardIsInactive(card);
   checkIfCardIsExpirated(card);
 
@@ -114,26 +121,24 @@ function createCardData(employeeId: number, employeeFullName: string, type: Tran
   };
 }
 
-async function checkIfCompanyExists(apiKey: string) {
-  const company = await companyRepository.findByApiKey(apiKey);
+function checkIfCompanyExists(company: Company | undefined) {
   if (!company) throw new CustomError('not_found', 'Company not found');
   return company;
 }
 
-async function checkIfEmployeeExists(employeeId: number) {
-  const employee = await employeeRepository.findById(employeeId);
+function checkIfEmployeeExists(employee: Employee) {
   if (!employee) throw new CustomError('not_found', 'Employee not found');
   return employee;
 }
 
-function checkIfEmployeeWorksAtTheCompany(company: Company, employee: Employee) {
+function checkIfEmployeeWorksForThisCompany(company: Company, employee: Employee) {
   if (company.id !== employee.companyId)
-    throw new CustomError('unauthorized', 'Employee does not work at the company');
+    throw new CustomError('unauthorized', 'Employee does not work for this company');
 }
 
-async function checkIfHasCardWithThisType(cardType: TransactionTypes, employeeId: number) {
+async function checkIfAlreadyHasCardWithThisType(cardType: TransactionTypes, employeeId: number) {
   const cards = await cardRepository.findByTypeAndEmployeeId(cardType, employeeId);
-  if (cards) throw new CustomError('conflict', `The employee already has a ${cardType} card`);
+  if (cards) throw new CustomError('conflict', `The employee already has a ${cardType}-type card`);
 }
 
 async function checkIfCardExists(cardId: number) {
