@@ -43,10 +43,10 @@ export async function rechargeCard(req: Request, res: Response) {
 }
 
 export async function payWithCard(req: Request, res: Response) {
-  const { cardId } = req.params;
+  const { cardId } = res.locals;
   const { password, businessId, amount } = req.body;
 
-  await cardsService.payWithCard(Number(cardId), password, Number(businessId), Number(amount));
+  await cardsService.payWithCard(cardId, password, parseInt(businessId), parseInt(amount));
   res.sendStatus(200);
 }
 

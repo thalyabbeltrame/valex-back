@@ -55,7 +55,7 @@ export async function blockCard(cardId: number, password: string) {
   const card = await cardRepository.findById(cardId);
   checkIfCardExists(card);
   checkIfCardIsExpirated(card.expirationDate);
-  checkIfCardIsAlreadyBlocked(card.isBlocked);
+  checkIfCardIsBlocked(card.isBlocked);
   checkIfPasswordIsIncorrect(password, card);
 
   await cardRepository.update(cardId, { isBlocked: true });
@@ -65,7 +65,7 @@ export async function unblockCard(cardId: number, password: string) {
   const card = await cardRepository.findById(cardId);
   checkIfCardExists(card);
   checkIfCardIsExpirated(card.expirationDate);
-  checkIfCardIsAlreadyUnblocked(card.isBlocked);
+  checkIfCardIsUnblocked(card.isBlocked);
   checkIfPasswordIsIncorrect(password, card);
 
   await cardRepository.update(cardId, { isBlocked: false });
@@ -97,14 +97,16 @@ export async function payWithCard(
   checkIfCardExists(card);
   checkIfCardIsInactive(card.password);
   checkIfCardIsExpirated(card.expirationDate);
-  checkIfCardIsAlreadyBlocked(card.isBlocked);
+  checkIfCardIsBlocked(card.isBlocked);
   checkIfPasswordIsIncorrect(password, card);
 
   const business = await checkIfBusinessIsRegistered(businessId);
-  checkIfCardTypeIsAcceptedAtBusiness(business, card);
+  checkIfCardTypeIsAccepted(business, card);
 
   const { balance } = await calculateCardBalance(cardId);
   await checkIfBalanceIsEnough(balance, amount);
+
+  await paymentRepository.insert({ cardId, amount, businessId });
 }
 
 export async function getCardBalance(cardId: number) {
@@ -176,8 +178,8 @@ function checkIfSecurityCodeIsIncorrect(securityCode: string, card: Card) {
   }
 }
 
-function checkIfCardIsAlreadyBlocked(isBlocked: boolean) {
-  if (isBlocked) throw new CustomError('conflict', 'Card is already blocked');
+function checkIfCardIsBlocked(isBlocked: boolean) {
+  if (isBlocked) throw new CustomError('conflict', 'Card is blocked');
 }
 
 function checkIfPasswordIsIncorrect(password: string, card: Card) {
@@ -185,8 +187,8 @@ function checkIfPasswordIsIncorrect(password: string, card: Card) {
   if (password !== decryptedPassword) throw new CustomError('unauthorized', 'Invalid password');
 }
 
-function checkIfCardIsAlreadyUnblocked(isBlocked: boolean) {
-  if (!isBlocked) throw new CustomError('conflict', 'Card is already unblocked');
+function checkIfCardIsUnblocked(isBlocked: boolean) {
+  if (!isBlocked) throw new CustomError('conflict', 'Card is unblocked');
 }
 
 function checkIfCardIsInactive(password: string | undefined) {
@@ -199,7 +201,7 @@ async function checkIfBusinessIsRegistered(businessId: number) {
   return business;
 }
 
-function checkIfCardTypeIsAcceptedAtBusiness(business: Business, card: Card) {
+function checkIfCardTypeIsAccepted(business: Business, card: Card) {
   if (business.type !== card.type)
     throw new CustomError('unauthorized', 'The business does not accept this card type');
 }

@@ -3,7 +3,6 @@ import Joi from 'joi';
 export const newCardSchema = Joi.object({
   employeeId: Joi.number().required(),
   type: Joi.string()
-    .trim()
     .valid('groceries', 'restaurant', 'transport', 'education', 'health')
     .required(),
 });
@@ -11,12 +10,10 @@ export const newCardSchema = Joi.object({
 export const activateCardSchema = Joi.object({
   employeeId: Joi.number().required(),
   password: Joi.string()
-    .trim()
     .regex(/^[0-9]*$/)
     .length(4)
     .required(),
   securityCode: Joi.string()
-    .trim()
     .regex(/^[0-9]*$/)
     .length(3)
     .required(),
@@ -24,7 +21,6 @@ export const activateCardSchema = Joi.object({
 
 export const blockUnblockCardSchema = Joi.object({
   password: Joi.string()
-    .trim()
     .regex(/^[0-9]*$/)
     .length(4)
     .required(),

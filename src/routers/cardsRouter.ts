@@ -48,5 +48,10 @@ cardsRouter.post(
   validateBody(rechargeCardSchema),
   rechargeCard
 );
-cardsRouter.post('/cards/:cardId/payment', validateBody(paymentSchema), payWithCard);
+cardsRouter.post(
+  '/cards/:cardId/payment',
+  validateParams,
+  validateBody(paymentSchema),
+  payWithCard
+);
 cardsRouter.get('/cards/:cardId/balance', getCardBalance);
