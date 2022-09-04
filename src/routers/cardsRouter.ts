@@ -35,7 +35,12 @@ cardsRouter.patch(
   validateBody(blockUnblockCardSchema),
   blockCard
 );
-cardsRouter.patch('/cards/:cardId/unblock', validateBody(blockUnblockCardSchema), unblockCard);
+cardsRouter.patch(
+  '/cards/:cardId/unblock',
+  validateParams,
+  validateBody(blockUnblockCardSchema),
+  unblockCard
+);
 cardsRouter.post(
   '/cards/:cardId/recharge',
   validateApiKey,

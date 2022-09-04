@@ -65,7 +65,7 @@ export async function unblockCard(cardId: number, password: string) {
   const card = await cardRepository.findById(cardId);
   checkIfCardExists(card);
   checkIfCardIsExpirated(card.expirationDate);
-  checkIfCardIsUnblocked(card);
+  checkIfCardIsAlreadyUnblocked(card.isBlocked);
   checkIfPasswordIsIncorrect(password, card);
 
   await cardRepository.update(cardId, { isBlocked: false });
@@ -184,8 +184,8 @@ function checkIfPasswordIsIncorrect(password: string, card: Card) {
   if (password !== decryptedPassword) throw new CustomError('unauthorized', 'Invalid password');
 }
 
-function checkIfCardIsUnblocked(card: Card) {
-  if (!card.isBlocked) throw new CustomError('conflict', 'Card is already unblocked');
+function checkIfCardIsAlreadyUnblocked(isBlocked: boolean) {
+  if (!isBlocked) throw new CustomError('conflict', 'Card is already unblocked');
 }
 
 function checkIfCardIsInactive(card: Card) {
