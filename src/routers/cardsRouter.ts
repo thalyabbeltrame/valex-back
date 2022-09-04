@@ -5,20 +5,12 @@ import {
   blockCard,
   createNewCard,
   getCardBalance,
-  payWithCard,
-  rechargeCard,
   unblockCard,
 } from '../controllers/cardsController';
 import { validateApiKey } from '../middlewares/apiKeyMiddleware';
 import { validateBody } from '../middlewares/bodyMiddeware';
 import { validateParams } from '../middlewares/paramsMiddleware';
-import {
-  activateCardSchema,
-  blockUnblockCardSchema,
-  newCardSchema,
-  paymentSchema,
-  rechargeCardSchema,
-} from '../schemas/cardsSchemas';
+import { activateCardSchema, blockUnblockCardSchema, newCardSchema } from '../schemas/cardsSchemas';
 
 export const cardsRouter = Router();
 
@@ -41,17 +33,5 @@ cardsRouter.patch(
   validateBody(blockUnblockCardSchema),
   unblockCard
 );
-cardsRouter.post(
-  '/cards/:cardId/recharge',
-  validateApiKey,
-  validateParams,
-  validateBody(rechargeCardSchema),
-  rechargeCard
-);
-cardsRouter.post(
-  '/cards/:cardId/payment',
-  validateParams,
-  validateBody(paymentSchema),
-  payWithCard
-);
+
 cardsRouter.get('/cards/:cardId/balance', validateParams, getCardBalance);

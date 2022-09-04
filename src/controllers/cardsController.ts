@@ -34,22 +34,6 @@ export async function unblockCard(req: Request, res: Response) {
   res.sendStatus(200);
 }
 
-export async function rechargeCard(req: Request, res: Response) {
-  const { apiKey, cardId } = res.locals;
-  const { amount } = req.body;
-
-  await cardsService.rechargeCard(apiKey, cardId, parseInt(amount));
-  res.sendStatus(200);
-}
-
-export async function payWithCard(req: Request, res: Response) {
-  const { cardId } = res.locals;
-  const { password, businessId, amount } = req.body;
-
-  await cardsService.payWithCard(cardId, password, parseInt(businessId), parseInt(amount));
-  res.sendStatus(200);
-}
-
 export async function getCardBalance(req: Request, res: Response) {
   const { cardId } = res.locals;
 

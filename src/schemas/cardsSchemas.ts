@@ -30,7 +30,7 @@ export const rechargeCardSchema = Joi.object({
   amount: Joi.number().integer().greater(0).required(),
 });
 
-export const paymentSchema = Joi.object({
+export const paymentPosSchema = Joi.object({
   password: Joi.string()
     .regex(/^[0-9]*$/)
     .length(4)
