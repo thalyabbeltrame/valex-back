@@ -3,7 +3,7 @@ import * as companyRepository from '../repositories/companyRepository';
 import * as employeeRepository from '../repositories/employeeRepository';
 import * as paymentRepository from '../repositories/paymentRepository';
 import * as rechargeRepository from '../repositories/rechargeRepository';
-import { TransactionTypes } from '../types/cardTypes';
+import { CardInsertData, TransactionTypes } from '../types/cardTypes';
 import {
   generateCardCVV,
   generateCardNumber,
@@ -72,7 +72,11 @@ export async function getCardBalance(cardId: number) {
   return { balance, transactions, recharges };
 }
 
-function createCardData(employeeId: number, employeeFullName: string, type: TransactionTypes) {
+function createCardData(
+  employeeId: number,
+  employeeFullName: string,
+  type: TransactionTypes
+): CardInsertData {
   return {
     employeeId: employeeId,
     number: generateCardNumber(),

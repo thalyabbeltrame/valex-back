@@ -92,3 +92,8 @@ export function checkIfCardTypeIsAccepted(business: Business, card: Card) {
 export async function checkIfBalanceIsEnough(balance: number, amount: number) {
   if (amount > balance) throw new CustomError('bad_request', 'Insufficient balance');
 }
+
+export function checkIfCardIsVirtual(isVirtual: boolean) {
+  if (isVirtual)
+    throw new CustomError('bad_request', 'Cannot create a virtual card from another virtual card');
+}
