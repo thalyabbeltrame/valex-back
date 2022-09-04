@@ -37,6 +37,7 @@ export async function activateCard(
   validationService.checkIfCardExists(card);
   validationService.checkIfCardBelongsToEmployee(card, employeeId);
   validationService.checkIfCardIsExpirated(card.expirationDate);
+  validationService.checkIfCardIsVirtual(card.isVirtual);
   validationService.checkIfCardIsAlreadyActive(card.password);
   validationService.checkIfSecurityCodeIsIncorrect(securityCode, card);
 

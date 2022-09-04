@@ -94,8 +94,7 @@ export async function checkIfBalanceIsEnough(balance: number, amount: number) {
 }
 
 export function checkIfCardIsVirtual(isVirtual: boolean) {
-  if (isVirtual)
-    throw new CustomError('bad_request', 'Cannot create a virtual card from another virtual card');
+  if (isVirtual) throw new CustomError('bad_request', 'Action not allowed for virtual cards');
 }
 
 export function checkIfCardIsNotVirtual(isVirtual: boolean) {
