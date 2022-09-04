@@ -3,6 +3,13 @@ import * as paymentRepository from '../repositories/paymentRepository';
 import * as cardsService from './cardsService';
 import * as validationService from './validationService';
 
+interface CardData {
+  number: string;
+  cardholderName: string;
+  expirationDate: string;
+  securityCode: string;
+}
+
 export async function payWithCard(
   cardId: number,
   password: string,
@@ -23,4 +30,25 @@ export async function payWithCard(
   await validationService.checkIfBalanceIsEnough(balance, amount);
 
   await paymentRepository.insert({ cardId, amount, businessId });
+}
+
+export async function payOnlinePurchase(cardData: CardData, businessId: number, amount: number) {
+  const card = await cardRepository.findByCardDetails(
+    cardData.number,
+    cardData.cardholderName,
+    cardData.expirationDate
+  );
+  validationService.checkIfCardExists(card);
+  validationService.checkIfSecurityCodeIsIncorrect(cardData.securityCode, card);
+  validationService.checkIfCardIsInactive(card.password);
+  validationService.checkIfCardIsExpirated(card.expirationDate);
+  validationService.checkIfCardIsBlocked(card.isBlocked);
+
+  const business = await validationService.checkIfBusinessIsRegistered(businessId);
+  validationService.checkIfCardTypeIsAccepted(business, card);
+
+  const { balance } = await cardsService.calculateCardBalance(card.id);
+  await validationService.checkIfBalanceIsEnough(balance, amount);
+
+  await paymentRepository.insert({ cardId: card.id, amount, businessId });
 }

@@ -1,15 +1,16 @@
 import { Router } from 'express';
 
-import { payWithCard } from '../controllers/paymentsController';
+import { payWithCard, payOnlinePurchase } from '../controllers/paymentsController';
 import { validateBody } from '../middlewares/bodyMiddeware';
 import { validateParams } from '../middlewares/paramsMiddleware';
-import { paymentPosSchema } from '../schemas/cardsSchemas';
+import { posPaymentSchema, onlinePaymentSchema } from '../schemas/paymentsSchemas';
 
 export const paymentsRouter = Router();
 
 paymentsRouter.post(
   '/cards/:cardId/payment/pos',
   validateParams,
-  validateBody(paymentPosSchema),
+  validateBody(posPaymentSchema),
   payWithCard
 );
+paymentsRouter.post('/cards/payment/online', validateBody(onlinePaymentSchema), payOnlinePurchase);
