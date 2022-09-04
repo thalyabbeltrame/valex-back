@@ -48,6 +48,7 @@ export async function payOnlinePurchase(cardData: CardData, businessId: number, 
   const business = await validationService.checkIfBusinessIsRegistered(businessId);
   validationService.checkIfCardTypeIsAccepted(business, card);
 
+  if (card.isVirtual && card.originalCardId) card.id = card.originalCardId;
   const { balance } = await cardsService.calculateCardBalance(card.id);
   await validationService.checkIfBalanceIsEnough(balance, amount);
 
