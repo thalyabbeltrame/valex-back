@@ -5,6 +5,10 @@ export function generateCardNumber(): string {
   return faker.finance.creditCardNumber('#### #### #### ####');
 }
 
+export function generateCardCVV(): string {
+  return faker.finance.creditCardCVV();
+}
+
 export function generateExpirationDate() {
   return dayjs().add(5, 'y').format('MM/YY');
 }

@@ -1,4 +1,3 @@
-import { faker } from '@faker-js/faker';
 import dayjs from 'dayjs';
 
 import { Business } from '../interfaces/businessInterface';
@@ -13,7 +12,12 @@ import * as paymentRepository from '../repositories/paymentRepository';
 import * as rechargeRepository from '../repositories/rechargeRepository';
 import { TransactionTypes } from '../types/cardTypes';
 import { CustomError } from '../utils/CustomError';
-import { generateCardNumber, generateExpirationDate, generateHolderName } from '../utils/cardUtils';
+import {
+  generateCardCVV,
+  generateCardNumber,
+  generateExpirationDate,
+  generateHolderName,
+} from '../utils/cardUtils';
 import { generateDecryptedData, generateEncryptedData } from '../utils/cryptUtils';
 
 export async function createNewCard(apiKey: string, employeeId: number, type: TransactionTypes) {
@@ -100,7 +104,7 @@ function createCardData(employeeId: number, employeeFullName: string, type: Tran
     employeeId: employeeId,
     number: generateCardNumber(),
     cardholderName: generateHolderName(employeeFullName),
-    securityCode: generateEncryptedData(faker.finance.creditCardCVV()),
+    securityCode: generateEncryptedData(generateCardCVV()),
     expirationDate: generateExpirationDate(),
     password: undefined,
     isVirtual: false,
