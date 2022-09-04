@@ -6,3 +6,10 @@ export const newVirtualCardSchema = Joi.object({
     .length(4)
     .required(),
 });
+
+export const deleteVirtualCardSchema = Joi.object({
+  password: Joi.string()
+    .regex(/^[0-9]*$/)
+    .length(4)
+    .required(),
+});

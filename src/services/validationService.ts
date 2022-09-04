@@ -97,3 +97,7 @@ export function checkIfCardIsVirtual(isVirtual: boolean) {
   if (isVirtual)
     throw new CustomError('bad_request', 'Cannot create a virtual card from another virtual card');
 }
+
+export function checkIfCardIsNotVirtual(isVirtual: boolean) {
+  if (!isVirtual) throw new CustomError('bad_request', 'Only virtual cards can be deleted');
+}

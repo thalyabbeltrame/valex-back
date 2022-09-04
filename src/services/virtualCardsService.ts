@@ -16,6 +16,15 @@ export async function createNewVirtualCard(cardId: number, password: string) {
   await cardRepository.insert(virtualCardData);
 }
 
+export async function deleteVirtualCard(cardId: number, password: string) {
+  const card = await cardRepository.findById(cardId);
+  validationService.checkIfCardExists(card);
+  validationService.checkIfCardIsNotVirtual(card.isVirtual);
+  validationService.checkIfPasswordIsIncorrect(password, card);
+
+  await cardRepository.remove(cardId);
+}
+
 function createVirtualCardData(card: Card): CardInsertData {
   return {
     employeeId: card.employeeId,
