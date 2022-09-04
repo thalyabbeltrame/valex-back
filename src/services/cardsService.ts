@@ -40,19 +40,21 @@ export async function activateCard(
   password: string,
   securityCode: string
 ) {
-  const card = await checkIfCardExists(cardId);
-  checkIfCardBelongsToEmployee(employeeId, card);
-  checkIfCardIsExpirated(card);
-  checkIfCardIsActive(card);
-  checkIfSecurityCodeIsCorrect(securityCode, card);
+  const card = await cardRepository.findById(cardId);
+  checkIfCardExists(card);
+  checkIfCardBelongsToEmployee(card, employeeId);
+  checkIfCardIsExpirated(card.expirationDate);
+  checkIfCardIsAlreadyActive(card.password);
+  checkIfSecurityCodeIsIncorrect(securityCode, card);
 
   const encryptedPassword = generateEncryptedData(password);
   await cardRepository.update(cardId, { password: encryptedPassword });
 }
 
 export async function blockCard(cardId: number, password: string) {
-  const card = await checkIfCardExists(cardId);
-  checkIfCardIsExpirated(card);
+  const card = await cardRepository.findById(cardId);
+  checkIfCardExists(card);
+  checkIfCardIsExpirated(card.expirationDate);
   checkIfCardIsBlocked(card);
   checkIfPasswordIsCorrect(password, card);
 
@@ -60,8 +62,9 @@ export async function blockCard(cardId: number, password: string) {
 }
 
 export async function unblockCard(cardId: number, password: string) {
-  const card = await checkIfCardExists(cardId);
-  checkIfCardIsExpirated(card);
+  const card = await cardRepository.findById(cardId);
+  checkIfCardExists(card);
+  checkIfCardIsExpirated(card.expirationDate);
   checkIfCardIsUnblocked(card);
   checkIfPasswordIsCorrect(password, card);
 
@@ -72,11 +75,13 @@ export async function rechargeCard(apiKey: string, cardId: number, amount: numbe
   const company = await companyRepository.findByApiKey(apiKey);
   checkIfCompanyExists(company);
 
-  const card = await checkIfCardExists(cardId);
+  const card = await cardRepository.findById(cardId);
+  checkIfCardExists(card);
+
   const employee = await employeeRepository.findById(card.employeeId);
   checkIfEmployeeWorksForThisCompany(company, employee);
   checkIfCardIsInactive(card);
-  checkIfCardIsExpirated(card);
+  checkIfCardIsExpirated(card.expirationDate);
 
   await rechargeRepository.insert({ cardId, amount });
 }
@@ -87,9 +92,10 @@ export async function payWithCard(
   businessId: number,
   amount: number
 ) {
-  const card = await checkIfCardExists(cardId);
+  const card = await cardRepository.findById(cardId);
+  checkIfCardExists(card);
   checkIfCardIsInactive(card);
-  checkIfCardIsExpirated(card);
+  checkIfCardIsExpirated(card.expirationDate);
   checkIfCardIsBlocked(card);
   checkIfPasswordIsCorrect(password, card);
 
@@ -101,7 +107,8 @@ export async function payWithCard(
 }
 
 export async function getCardBalance(cardId: number) {
-  await checkIfCardExists(cardId);
+  const card = await cardRepository.findById(cardId);
+  checkIfCardExists(card);
   const { balance, transactions, recharges } = await calculateCardBalance(cardId);
   return { balance, transactions, recharges };
 }
@@ -141,28 +148,27 @@ async function checkIfAlreadyHasCardWithThisType(cardType: TransactionTypes, emp
   if (cards) throw new CustomError('conflict', `The employee already has a ${cardType}-type card`);
 }
 
-async function checkIfCardExists(cardId: number) {
-  const card = await cardRepository.findById(cardId);
+function checkIfCardExists(card: Card) {
   if (!card) throw new CustomError('not_found', 'Card not found');
   return card;
 }
 
-function checkIfCardBelongsToEmployee(employeeId: number, card: Card) {
+function checkIfCardBelongsToEmployee(card: Card, employeeId: number) {
   if (employeeId !== card.employeeId)
     throw new CustomError('forbidden', 'Card does not belong to this employee');
 }
 
-function checkIfCardIsExpirated(card: Card) {
-  const formattedDate = card.expirationDate.replace('/', '/01/');
+function checkIfCardIsExpirated(expirationDate: string) {
+  const formattedDate = expirationDate.replace('/', '/01/');
   if (!dayjs().isBefore(dayjs(formattedDate), 'month'))
     throw new CustomError('forbidden', 'This card is expired');
 }
 
-function checkIfCardIsActive(card: Card) {
-  if (card.password) throw new CustomError('conflict', 'Cannot activate card more than once');
+function checkIfCardIsAlreadyActive(password: string | undefined) {
+  if (password) throw new CustomError('conflict', 'Cannot activate card more than once');
 }
 
-function checkIfSecurityCodeIsCorrect(securityCode: string, card: Card) {
+function checkIfSecurityCodeIsIncorrect(securityCode: string, card: Card) {
   const decryptedCode = generateDecryptedData(card.securityCode);
   if (securityCode !== decryptedCode) {
     throw new CustomError('unauthorized', 'Invalid security code');

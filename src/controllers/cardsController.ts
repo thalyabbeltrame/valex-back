@@ -11,10 +11,10 @@ export async function createNewCard(req: Request, res: Response) {
 }
 
 export async function activateCard(req: Request, res: Response) {
-  const { cardId } = req.params;
+  const { cardId } = res.locals;
   const { employeeId, password, securityCode } = req.body;
 
-  await cardsService.activateCard(Number(cardId), Number(employeeId), password, securityCode);
+  await cardsService.activateCard(cardId, employeeId, password, securityCode);
   res.sendStatus(200);
 }
 

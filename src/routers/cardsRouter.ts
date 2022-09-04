@@ -4,13 +4,14 @@ import {
   activateCard,
   blockCard,
   createNewCard,
-  unblockCard,
-  rechargeCard,
-  payWithCard,
   getCardBalance,
+  payWithCard,
+  rechargeCard,
+  unblockCard,
 } from '../controllers/cardsController';
 import { validateApiKey } from '../middlewares/apiKeyMiddleware';
 import { validateBody } from '../middlewares/bodyMiddeware';
+import { validateParams } from '../middlewares/paramsMiddleware';
 import {
   activateCardSchema,
   blockUnblockCardSchema,
@@ -22,7 +23,12 @@ import {
 export const cardsRouter = Router();
 
 cardsRouter.post('/cards/create', validateApiKey, validateBody(newCardSchema), createNewCard);
-cardsRouter.patch('/cards/:cardId/activate', validateBody(activateCardSchema), activateCard);
+cardsRouter.patch(
+  '/cards/:cardId/activate',
+  validateParams(),
+  validateBody(activateCardSchema),
+  activateCard
+);
 cardsRouter.patch('/cards/:cardId/block', validateBody(blockUnblockCardSchema), blockCard);
 cardsRouter.patch('/cards/:cardId/unblock', validateBody(blockUnblockCardSchema), unblockCard);
 cardsRouter.post(
