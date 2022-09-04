@@ -18,6 +18,7 @@ export async function payWithCard(
 ) {
   const card = await cardRepository.findById(cardId);
   validationService.checkIfCardExists(card);
+  validationService.checkIfCardIsVirtual(card.isVirtual);
   validationService.checkIfCardIsInactive(card.password);
   validationService.checkIfCardIsExpirated(card.expirationDate);
   validationService.checkIfCardIsBlocked(card.isBlocked);
