@@ -80,7 +80,8 @@ export async function rechargeCard(apiKey: string, cardId: number, amount: numbe
 
   const employee = await employeeRepository.findById(card.employeeId);
   checkIfEmployeeWorksForThisCompany(company, employee);
-  checkIfCardIsInactive(card);
+
+  checkIfCardIsInactive(card.password);
   checkIfCardIsExpirated(card.expirationDate);
 
   await rechargeRepository.insert({ cardId, amount });
@@ -94,7 +95,7 @@ export async function payWithCard(
 ) {
   const card = await cardRepository.findById(cardId);
   checkIfCardExists(card);
-  checkIfCardIsInactive(card);
+  checkIfCardIsInactive(card.password);
   checkIfCardIsExpirated(card.expirationDate);
   checkIfCardIsAlreadyBlocked(card.isBlocked);
   checkIfPasswordIsIncorrect(password, card);
@@ -188,8 +189,8 @@ function checkIfCardIsAlreadyUnblocked(isBlocked: boolean) {
   if (!isBlocked) throw new CustomError('conflict', 'Card is already unblocked');
 }
 
-function checkIfCardIsInactive(card: Card) {
-  if (!card.password) throw new CustomError('unauthorized', 'Card is inactive');
+function checkIfCardIsInactive(password: string | undefined) {
+  if (!password) throw new CustomError('unauthorized', 'Card is inactive');
 }
 
 async function checkIfBusinessIsRegistered(businessId: number) {

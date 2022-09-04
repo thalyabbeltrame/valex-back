@@ -44,6 +44,7 @@ cardsRouter.patch(
 cardsRouter.post(
   '/cards/:cardId/recharge',
   validateApiKey,
+  validateParams,
   validateBody(rechargeCardSchema),
   rechargeCard
 );
