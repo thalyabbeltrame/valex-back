@@ -55,8 +55,8 @@ export async function blockCard(cardId: number, password: string) {
   const card = await cardRepository.findById(cardId);
   checkIfCardExists(card);
   checkIfCardIsExpirated(card.expirationDate);
-  checkIfCardIsBlocked(card);
-  checkIfPasswordIsCorrect(password, card);
+  checkIfCardIsAlreadyBlocked(card.isBlocked);
+  checkIfPasswordIsIncorrect(password, card);
 
   await cardRepository.update(cardId, { isBlocked: true });
 }
@@ -66,7 +66,7 @@ export async function unblockCard(cardId: number, password: string) {
   checkIfCardExists(card);
   checkIfCardIsExpirated(card.expirationDate);
   checkIfCardIsUnblocked(card);
-  checkIfPasswordIsCorrect(password, card);
+  checkIfPasswordIsIncorrect(password, card);
 
   await cardRepository.update(cardId, { isBlocked: false });
 }
@@ -96,8 +96,8 @@ export async function payWithCard(
   checkIfCardExists(card);
   checkIfCardIsInactive(card);
   checkIfCardIsExpirated(card.expirationDate);
-  checkIfCardIsBlocked(card);
-  checkIfPasswordIsCorrect(password, card);
+  checkIfCardIsAlreadyBlocked(card.isBlocked);
+  checkIfPasswordIsIncorrect(password, card);
 
   const business = await checkIfBusinessIsRegistered(businessId);
   checkIfCardTypeIsAcceptedAtBusiness(business, card);
@@ -175,11 +175,11 @@ function checkIfSecurityCodeIsIncorrect(securityCode: string, card: Card) {
   }
 }
 
-function checkIfCardIsBlocked(card: Card) {
-  if (card.isBlocked) throw new CustomError('conflict', 'Card is already blocked');
+function checkIfCardIsAlreadyBlocked(isBlocked: boolean) {
+  if (isBlocked) throw new CustomError('conflict', 'Card is already blocked');
 }
 
-function checkIfPasswordIsCorrect(password: string, card: Card) {
+function checkIfPasswordIsIncorrect(password: string, card: Card) {
   const decryptedPassword = card.password ? generateDecryptedData(card.password) : '';
   if (password !== decryptedPassword) throw new CustomError('unauthorized', 'Invalid password');
 }

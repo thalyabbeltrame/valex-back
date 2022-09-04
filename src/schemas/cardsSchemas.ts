@@ -24,6 +24,7 @@ export const activateCardSchema = Joi.object({
 
 export const blockUnblockCardSchema = Joi.object({
   password: Joi.string()
+    .trim()
     .regex(/^[0-9]*$/)
     .length(4)
     .required(),

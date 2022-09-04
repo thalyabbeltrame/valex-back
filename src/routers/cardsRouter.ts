@@ -25,11 +25,16 @@ export const cardsRouter = Router();
 cardsRouter.post('/cards/create', validateApiKey, validateBody(newCardSchema), createNewCard);
 cardsRouter.patch(
   '/cards/:cardId/activate',
-  validateParams(),
+  validateParams,
   validateBody(activateCardSchema),
   activateCard
 );
-cardsRouter.patch('/cards/:cardId/block', validateBody(blockUnblockCardSchema), blockCard);
+cardsRouter.patch(
+  '/cards/:cardId/block',
+  validateParams,
+  validateBody(blockUnblockCardSchema),
+  blockCard
+);
 cardsRouter.patch('/cards/:cardId/unblock', validateBody(blockUnblockCardSchema), unblockCard);
 cardsRouter.post(
   '/cards/:cardId/recharge',

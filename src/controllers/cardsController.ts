@@ -19,10 +19,10 @@ export async function activateCard(req: Request, res: Response) {
 }
 
 export async function blockCard(req: Request, res: Response) {
-  const { cardId } = req.params;
+  const { cardId } = res.locals;
   const { password } = req.body;
 
-  await cardsService.blockCard(Number(cardId), password);
+  await cardsService.blockCard(cardId, password);
   res.sendStatus(200);
 }
 
