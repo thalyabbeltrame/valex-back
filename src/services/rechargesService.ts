@@ -14,6 +14,7 @@ export async function rechargeCard(apiKey: string, cardId: number, amount: numbe
   const employee = await employeeRepository.findById(card.employeeId);
   validationService.checkIfEmployeeWorksForThisCompany(company, employee);
 
+  validationService.checkIfCardIsVirtual(card.isVirtual);
   validationService.checkIfCardIsInactive(card.password);
   validationService.checkIfCardIsExpirated(card.expirationDate);
 
