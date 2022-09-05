@@ -1,4 +1,6 @@
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js';
+import isSameOrBefore from 'dayjs/plugin/isSameOrBefore.js';
 
 import { Business } from '../interfaces/businessInterface';
 import { Card } from '../interfaces/cardInterface';
@@ -10,6 +12,9 @@ import * as cardRepository from '../repositories/cardRepository';
 import { TransactionTypes } from '../types/cardTypes';
 import { generateDecryptedData } from '../utils/cryptUtils';
 import { CustomError } from '../utils/CustomError';
+
+dayjs.extend(isSameOrBefore);
+dayjs.extend(customParseFormat);
 
 export function checkIfCompanyExists(company: Company | undefined) {
   if (!company) throw new CustomError('not_found', 'Company not found');
@@ -45,8 +50,7 @@ export function checkIfCardBelongsToEmployee(card: Card, employeeId: number) {
 }
 
 export function checkIfCardIsExpirated(expirationDate: string) {
-  const formattedDate = expirationDate.replace('/', '/01/');
-  if (!dayjs().isBefore(dayjs(formattedDate), 'month'))
+  if (!dayjs().isSameOrBefore(dayjs(expirationDate, 'MM/YY')))
     throw new CustomError('forbidden', 'This card is expired');
 }
 
