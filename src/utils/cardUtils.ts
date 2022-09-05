@@ -2,8 +2,13 @@ import { faker } from '@faker-js/faker';
 import dayjs from 'dayjs';
 
 export function generateCardNumber(flag?: string): string {
-  if (flag === undefined) return faker.finance.creditCardNumber('#### #### #### ####');
-  else return faker.finance.creditCardNumber(flag);
+  if (flag === undefined) {
+    return faker.finance.creditCardNumber('#### #### #### ####');
+  } else {
+    const cardNumber = faker.finance.creditCardNumber(flag);
+    const searchRegExp = new RegExp('-', 'g');
+    return cardNumber.replace(searchRegExp, ' ');
+  }
 }
 
 export function generateCardCVV(): string {
