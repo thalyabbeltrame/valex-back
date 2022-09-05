@@ -18,89 +18,6 @@ Valex simulates an API that manages a benefit card, generally made available by 
 
 </br>
 
-## Payments
-
-### POS payment
-
-###### POST _`/cards/:cardId/payment/pos`_
-
-###### Body
-
-```json
-{
-  "password": "1234",
-  "businessId": "5",
-  "amount": 1000
-}
-```
-
-### Online payment
-
-###### POST _`/cards/payment/online`_
-
-###### Body
-
-```json
-{
-  "cardData": {
-    "number": "1234 5678 9101 1121",
-    "cardholderName": "Ana Catarina da Silva",
-    "expirationDate": "09/22",
-    "securityCode": "192"
-  },
-  "businessId": "5",
-  "amount": 1000
-}
-```
-
-## Recharges
-
-### New recharge
-
-###### POST _`/cards/:cardId/recharge`_
-
-###### Body
-
-```json
-{
-  "amount": 1000
-}
-```
-
-###### Headers
-
-```json
-{
-  "x-api-key": "this-is-a-x-api-key"
-}
-```
-
-## Virtual Cards
-
-### Create a virtual card
-
-###### POST _`/virtual-cards/:cardId/create`_
-
-###### Body
-
-```json
-{
-  "password": "1234"
-}
-```
-
-### Delete a virtual card
-
-###### DELETE _`/virtual-cards/:cardId/delete`_
-
-###### Body
-
-```json
-{
-  "password": "1234"
-}
-```
-
 ## API Reference
 
 ### Get card balance
@@ -156,7 +73,7 @@ POST /cards/create
 | `employeeId` | `integer` | **Required**. user Id              |
 | `type`       | `string`  | **Required**. type of card benefit |
 
-`Valid types: [groceries, restaurant, transport, education, health]`
+`Valid type: [groceries, restaurant, transport, education, health]`
 
 ####
 
@@ -205,7 +122,7 @@ PATCH /cards/:cardId/activate
 
 `Password pattern: only numbers`
 
-`Cvv max length: 3`
+`SecurityCode max length: 3`
 
 #
 
@@ -270,39 +187,117 @@ POST /cards/:cardId/recharge
 ### Card payments
 
 ```http
-POST /payments
+POST /cards/:cardId/payment/pos
 ```
 
 #### Request:
 
-| Body         | Type      | Description                        |
-| :----------- | :-------- | :--------------------------------- |
-| `cardId`     | `integer` | **Required**. card Id              |
-| `businessId` | `integer` | **Required**. card expiration date |
-| `password`   | `string`  | **Required**. card password        |
-| `amount`     | `integer` | **Required**. payment amount       |
+| Params   | Type      | Description           |
+| :------- | :-------- | :-------------------- |
+| `cardId` | `integer` | **Required**. card Id |
+
+| Body         | Type      | Description                  |
+| :----------- | :-------- | :--------------------------- |
+| `businessId` | `integer` | **Required**. businessId     |
+| `password`   | `string`  | **Required**. card password  |
+| `amount`     | `integer` | **Required**. payment amount |
 
 #
 
 ```http
-POST /payments/online
+POST /cards/payment/online
 ```
 
 #### Request:
 
 | Body             | Type      | Description                        |
 | :--------------- | :-------- | :--------------------------------- |
-| `cardId`         | `integer` | **Required**. card Id              |
 | `cardholderName` | `string`  | **Required**. name in card         |
-| `cardNumber`     | `string`  | **Required**. card number          |
+| `number`         | `string`  | **Required**. card number          |
 | `expirationDate` | `string`  | **Required**. card expiration date |
 | `securityCode`   | `string`  | **Required**. card CVV             |
-| `businessId`     | `integer` | **Required**. card expiration date |
+| `businessId`     | `integer` | **Required**. business id          |
 | `amount`         | `integer` | **Required**. payment amount       |
 
 `Expiration Date Format: "MM/YY"`
 
+##### Example:
+
+```json
+{
+  "cardData": {
+    "number": "1111 1111 1111 1111",
+    "cardholderName": "NAME N NAME",
+    "expirationDate": "09/22",
+    "securityCode": "111"
+  },
+  "businessId": "1",
+  "amount": 1000
+}
+```
+
 #
+
+### Create a virtual card
+
+```http
+POST /virtual-cards/:cardId/create
+```
+
+#### Request:
+
+| Params   | Type      | Description           |
+| :------- | :-------- | :-------------------- |
+| `cardId` | `integer` | **Required**. card Id |
+
+| Body       | Type     | Description                 |
+| :--------- | :------- | :-------------------------- |
+| `password` | `string` | **Required**. card password |
+
+| Headers     | Type     | Description           |
+| :---------- | :------- | :-------------------- |
+| `x-api-key` | `string` | **Required**. api key |
+
+#### Response:
+
+```json
+{
+  "employeeId": 1,
+  "number": "1111 1111 1111 1111",
+  "cardholderName": "NAME N NAME",
+  "securityCode": "111",
+  "expirationDate": "09/21",
+  "password": "encrypted-password",
+  "isVirtual": true,
+  "originalCardId": 1,
+  "isBlocked": false,
+  "type": "restaurant"
+}
+```
+
+####
+
+### Delete a virtual card
+
+```http
+POST /virtual-cards/:cardId/delete
+```
+
+#### Request:
+
+| Params   | Type      | Description           |
+| :------- | :-------- | :-------------------- |
+| `cardId` | `integer` | **Required**. card Id |
+
+| Body       | Type     | Description                 |
+| :--------- | :------- | :-------------------------- |
+| `password` | `string` | **Required**. card password |
+
+####
+
+| Headers     | Type     | Description           |
+| :---------- | :------- | :-------------------- |
+| `x-api-key` | `string` | **Required**. api key |
 
 ## Environment Variables
 
