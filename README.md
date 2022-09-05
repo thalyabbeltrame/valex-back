@@ -6,8 +6,6 @@ A Typescript designed project to manage benefit cards among companies and employ
 
 Valex simulates an API that manages a benefit card, generally made available by companies to their employees.
 
-</br>
-
 ## Features
 
 - Get the card balance and transactions
@@ -15,8 +13,6 @@ Valex simulates an API that manages a benefit card, generally made available by 
 - Activate / Block / Unlock a card
 - Recharge a card
 - Make card payments with online payment option
-
-</br>
 
 ## API Reference
 
@@ -30,7 +26,7 @@ GET /cards/:cardId/balance
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 #### Response:
 
@@ -70,18 +66,14 @@ POST /cards/create
 
 | Body         | Type      | Description                        |
 | :----------- | :-------- | :--------------------------------- |
-| `employeeId` | `integer` | **Required**. user Id              |
+| `employeeId` | `integer` | **Required**. user id              |
 | `type`       | `string`  | **Required**. type of card benefit |
 
 `Valid type: [groceries, restaurant, transport, education, health]`
 
-####
-
 | Headers     | Type     | Description           |
 | :---------- | :------- | :-------------------- |
 | `x-api-key` | `string` | **Required**. api key |
-
-####
 
 #### Response:
 
@@ -110,11 +102,11 @@ PATCH /cards/:cardId/activate
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 | Body           | Type      | Description                 |
 | :------------- | :-------- | :-------------------------- |
-| `employeeId`   | `integer` | **Required**. employeeId    |
+| `employeeId`   | `integer` | **Required**. user id       |
 | `password`     | `string`  | **Required**. card password |
 | `securityCode` | `string`  | **Required**. card cvv      |
 
@@ -136,7 +128,7 @@ PATCH /cards/:cardId/block
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 | Body       | Type     | Description                 |
 | :--------- | :------- | :-------------------------- |
@@ -154,7 +146,7 @@ PATCH /cards/:cardId/unblock
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 | Body       | Type     | Description                 |
 | :--------- | :------- | :-------------------------- |
@@ -172,7 +164,7 @@ POST /cards/:cardId/recharge
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 | Headers     | Type     | Description           |
 | :---------- | :------- | :-------------------- |
@@ -194,15 +186,17 @@ POST /cards/:cardId/payment/pos
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 | Body         | Type      | Description                  |
 | :----------- | :-------- | :--------------------------- |
-| `businessId` | `integer` | **Required**. businessId     |
+| `businessId` | `integer` | **Required**. user id        |
 | `password`   | `string`  | **Required**. card password  |
 | `amount`     | `integer` | **Required**. payment amount |
 
 #
+
+#### Online payments
 
 ```http
 POST /cards/payment/online
@@ -248,7 +242,7 @@ POST /virtual-cards/:cardId/create
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 | Body       | Type     | Description                 |
 | :--------- | :------- | :-------------------------- |
@@ -275,7 +269,7 @@ POST /virtual-cards/:cardId/create
 }
 ```
 
-####
+#
 
 ### Delete a virtual card
 
@@ -287,17 +281,17 @@ POST /virtual-cards/:cardId/delete
 
 | Params   | Type      | Description           |
 | :------- | :-------- | :-------------------- |
-| `cardId` | `integer` | **Required**. card Id |
+| `cardId` | `integer` | **Required**. card id |
 
 | Body       | Type     | Description                 |
 | :--------- | :------- | :-------------------------- |
 | `password` | `string` | **Required**. card password |
 
-####
-
 | Headers     | Type     | Description           |
 | :---------- | :------- | :-------------------- |
 | `x-api-key` | `string` | **Required**. api key |
+
+#
 
 ## Environment Variables
 
@@ -308,8 +302,6 @@ To run this project, you will need to add the following environment variables to
 `PORT = number #recommended:5000`
 
 `CRYPTR_SECRET_KEY = any string`
-
-</br>
 
 ## Run Locally
 
@@ -331,10 +323,20 @@ Install dependencies
   npm install
 ```
 
+Create database
+
+```bash
+  cd valex-back/database/
+```
+```bash
+  bash ./create-database
+```
+
 Start the server
 
 ```bash
+  cd valex-back/
+```
+```bash
   npm start
 ```
-
-</br>
