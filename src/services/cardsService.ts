@@ -24,7 +24,12 @@ export async function createNewCard(apiKey: string, employeeId: number, type: Tr
   await validationService.checkIfAlreadyHasCardWithThisType(type, employeeId);
 
   const cardData = createCardData(employeeId, employee.fullName, type);
-  await cardRepository.insert(cardData);
+  await cardRepository.insert({
+    ...cardData,
+    securityCode: generateEncryptedData(cardData.securityCode),
+  });
+
+  return cardData;
 }
 
 export async function activateCard(
@@ -82,7 +87,7 @@ function createCardData(
     employeeId: employeeId,
     number: generateCardNumber(),
     cardholderName: generateHolderName(employeeFullName),
-    securityCode: generateEncryptedData(generateCardCVV()),
+    securityCode: generateCardCVV(),
     expirationDate: generateExpirationDate(),
     password: undefined,
     isVirtual: false,

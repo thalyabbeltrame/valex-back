@@ -13,7 +13,12 @@ export async function createNewVirtualCard(cardId: number, password: string) {
   validationService.checkIfPasswordIsIncorrect(password, card);
 
   const virtualCardData = createVirtualCardData(card);
-  await cardRepository.insert(virtualCardData);
+  await cardRepository.insert({
+    ...virtualCardData,
+    securityCode: generateEncryptedData(virtualCardData.securityCode),
+  });
+
+  return virtualCardData;
 }
 
 export async function deleteVirtualCard(cardId: number, password: string) {
@@ -30,7 +35,7 @@ function createVirtualCardData(card: Card): CardInsertData {
     employeeId: card.employeeId,
     number: generateCardNumber('mastercard'),
     cardholderName: card.cardholderName,
-    securityCode: generateEncryptedData(generateCardCVV()),
+    securityCode: generateCardCVV(),
     expirationDate: generateExpirationDate(),
     password: card.password,
     isVirtual: true,

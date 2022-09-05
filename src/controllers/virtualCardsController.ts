@@ -6,8 +6,8 @@ export async function createNewVirtualCard(req: Request, res: Response) {
   const { cardId } = res.locals;
   const { password } = req.body;
 
-  await virtualCardsService.createNewVirtualCard(cardId, password);
-  res.sendStatus(201);
+  const virtualCard = await virtualCardsService.createNewVirtualCard(cardId, password);
+  res.status(201).send(virtualCard);
 }
 
 export async function deleteVirtualCard(req: Request, res: Response) {
